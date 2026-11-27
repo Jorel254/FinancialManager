@@ -11,7 +11,7 @@ Aplicación de escritorio (Windows) para finanzas personales: ingresos, egresos,
 ## Cómo correr (desarrollo)
 
 ```powershell
-cd C:\Users\gonza\Escritorio\Github\FinancialManager
+cd \FinancialManager
 npm install
 npm run dev
 ```
