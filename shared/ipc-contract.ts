@@ -1,6 +1,6 @@
 /**
  * Contrato IPC — canales y forma de respuesta.
- * Implementación real en Etapa 2 (preload) y Etapa 3+ (handlers).
+ * Preload (Etapa 2) expone window.api; handlers SQLite reales en Etapa 3+.
  */
 
 import type {

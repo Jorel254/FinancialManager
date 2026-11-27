@@ -1,8 +1,4 @@
-/**
- * Wrappers tipados sobre window.api (preload).
- * Etapa 2+: usar FinancialManagerApi de shared/ipc-contract.ts
- */
-import type { FinancialManagerApi } from "../../shared/ipc-contract";
+import type { FinancialManagerApi } from "@shared/ipc-contract";
 
 export function getApi(): FinancialManagerApi {
   if (!window.api) {
@@ -11,4 +7,8 @@ export function getApi(): FinancialManagerApi {
     );
   }
   return window.api;
+}
+
+export function hasApi(): boolean {
+  return typeof window !== "undefined" && Boolean(window.api);
 }

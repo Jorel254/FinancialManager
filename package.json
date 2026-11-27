@@ -1,29 +1,41 @@
 {
   "name": "financialmanager",
+  "version": "0.1.0",
   "private": true,
+  "description": "Finanzas personales locales — React + Electron",
+  "author": "Santiago",
   "type": "module",
+  "main": "./out/main/index.js",
   "scripts": {
-    "build": "react-router build",
-    "dev": "react-router dev",
-    "start": "react-router-serve ./build/server/index.js",
-    "typecheck": "react-router typegen && tsc"
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "preview": "electron-vite preview",
+    "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json"
   },
   "dependencies": {
-    "@react-router/node": "^8.5.3",
-    "@react-router/serve": "^8.5.3",
-    "isbot": "^5.1.36",
+    "@fontsource-variable/dm-sans": "^5.3.0",
+    "@fontsource/syne": "^5.3.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.511.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
-    "react-router": "^8.5.3"
+    "tailwind-merge": "^3.3.0"
   },
   "devDependencies": {
-    "@react-router/dev": "^8.5.3",
     "@tailwindcss/vite": "^4.2.2",
     "@types/node": "^22",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "electron": "^37.2.0",
+    "electron-vite": "^4.0.0",
     "tailwindcss": "^4.2.2",
     "typescript": "^5.9.3",
-    "vite": "^8.0.3"
+    "vite": "^6.3.5"
+  },
+  "allowScripts": {
+    "electron@37.10.3": true,
+    "esbuild@0.25.12": true
   }
 }

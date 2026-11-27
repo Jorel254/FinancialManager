@@ -2,27 +2,45 @@
 
 Aplicación de escritorio (Windows) para finanzas personales: ingresos, egresos, pagos pendientes y dashboard local.
 
-**Stack objetivo:** React · Electron · Vite · TypeScript · SQLite · shadcn/ui · Tailwind
+**Stack:** React · Electron · Vite · TypeScript · SQLite (Etapa 3+) · shadcn/ui · Tailwind
 
 ## Estado
 
-**Etapa 1 completada (arquitectura):** modelos, reglas de negocio, contrato IPC y estructura de carpetas documentados/esbozados.
+**Etapa 2 lista:** Electron + Vite SPA, preload `window.api`, Tailwind + base shadcn, ventana de escritorio con shell UI.
 
-El scaffold `app/` + React Router SSR es **temporal** (create-react-router). En **Etapa 2** se reemplaza por Electron + Vite SPA usando `electron/`, `src/` y `shared/`.
+## Cómo correr (Windows)
 
-## Estructura objetivo
+```powershell
+cd C:\Users\gonza\Escritorio\Github\FinancialManager
+npm install
+npm run dev
+```
+
+Otros scripts:
+
+| Script | Qué hace |
+|--------|----------|
+| `npm run dev` | Dev server Vite + ventana Electron |
+| `npm run build` | Compila main/preload/renderer a `out/` |
+| `npm run preview` | Previsualiza el build de producción |
+| `npm run typecheck` | TypeScript (node + web) |
+
+## Estructura
 
 ```
-electron/     # main, preload, IPC, SQLite
-shared/       # modelos, dinero (centavos), contrato IPC
+electron/     # main, preload, IPC (stubs)
+shared/       # modelos, dinero, contrato IPC
 src/          # renderer React + shadcn
-resources/    # iconos / empaquetado
+resources/    # assets de empaquetado (Etapa 9)
 ```
 
-## Desarrollo
+## Seguridad Electron
 
-Scripts actuales del scaffold web (`npm run dev`) no son el runtime final de escritorio. Etapa 2 definirá `dev`/`build` de Electron.
+- `contextIsolation: true`
+- `nodeIntegration: false`
+- `sandbox: true`
+- UI solo habla con `window.api` (preload)
 
-## Documentación
+## Siguiente
 
-La arquitectura de Etapa 1 vive en el Project store del equipo (`docs/etapa-1-arquitectura.md`).
+**Etapa 3:** SQLite (`better-sqlite3`), migraciones y repositorios reales detrás de los handlers IPC.

@@ -1,1 +1,88 @@
-/* Estilos globales + tokens Tailwind/shadcn — se cablean en Etapa 2 */
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "DM Sans Variable", "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Syne", ui-sans-serif, system-ui, sans-serif;
+
+  --color-background: #0c1a16;
+  --color-foreground: #e8f2ec;
+  --color-card: #13241e;
+  --color-card-foreground: #e8f2ec;
+  --color-primary: #2dd4a8;
+  --color-primary-foreground: #042019;
+  --color-secondary: #1a322a;
+  --color-secondary-foreground: #c5ddd2;
+  --color-muted: #1a2e27;
+  --color-muted-foreground: #8aab9c;
+  --color-accent: #243d34;
+  --color-accent-foreground: #e8f2ec;
+  --color-destructive: #f07167;
+  --color-border: #2a463b;
+  --color-ring: #2dd4a8;
+  --color-income: #3ecf8e;
+  --color-expense: #f07167;
+  --color-pending: #f0b429;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    margin: 0;
+    background-image:
+      radial-gradient(ellipse 80% 60% at 10% -10%, rgba(45, 212, 168, 0.18), transparent 55%),
+      radial-gradient(ellipse 70% 50% at 90% 0%, rgba(240, 180, 41, 0.1), transparent 50%),
+      radial-gradient(ellipse 50% 40% at 50% 100%, rgba(45, 212, 168, 0.08), transparent 60%);
+    background-attachment: fixed;
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse-soft {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.55s ease-out both;
+}
+
+.animate-fade-up-delay-1 {
+  animation: fade-up 0.55s ease-out 0.08s both;
+}
+
+.animate-fade-up-delay-2 {
+  animation: fade-up 0.55s ease-out 0.16s both;
+}
+
+.animate-fade-up-delay-3 {
+  animation: fade-up 0.55s ease-out 0.24s both;
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 2.4s ease-in-out infinite;
+}
