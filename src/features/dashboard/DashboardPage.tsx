@@ -24,7 +24,12 @@ const metricClass = [
   "animate-fade-up-delay-3",
 ] as const;
 
-export function DashboardPage() {
+interface DashboardPageProps {
+  /** Se incrementa tras crear/editar/eliminar ingresos o egresos. */
+  refreshToken?: number;
+}
+
+export function DashboardPage({ refreshToken = 0 }: DashboardPageProps) {
   const [summary, setSummary] = useState<FinanceSummary | null>(null);
   const [upcoming, setUpcoming] = useState<UpcomingPaymentItem[]>([]);
   const [ipcOk, setIpcOk] = useState(false);
@@ -45,6 +50,7 @@ export function DashboardPage() {
           setError(result.error.message);
           return;
         }
+        setError(null);
         setIpcOk(true);
         setSummary(result.data.summary);
         setUpcoming(result.data.upcoming);
@@ -59,7 +65,7 @@ export function DashboardPage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [refreshToken]);
 
   const cards = [
     {
@@ -98,8 +104,8 @@ export function DashboardPage() {
           Tu mes de un vistazo
         </h1>
         <p className="max-w-xl text-base text-muted-foreground">
-          Indicadores desde SQLite vía IPC. Sin movimientos aún verás ceros;
-          el CRUD visual de ingresos/egresos llega en la Etapa 4.
+          El saldo se recalcula al registrar, editar o eliminar ingresos y
+          egresos. Los pagos pendientes llegan en la Etapa 5.
         </p>
         <div className="flex flex-wrap items-center gap-3 pt-1">
           <span
@@ -159,7 +165,7 @@ export function DashboardPage() {
                 </p>
                 <p className="mt-2 text-sm text-muted-foreground">
                   Los pagos pendientes se registran en la Etapa 5; el resumen ya
-                  lee la base local.
+                  refleja ingresos y egresos.
                 </p>
               </div>
             ) : (

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import {
   History,
   LayoutDashboard,
@@ -9,6 +9,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DashboardPage } from "@/features/dashboard/DashboardPage";
+import { ExpensesPage } from "@/features/expenses/ExpensesPage";
+import { IncomesPage } from "@/features/incomes/IncomesPage";
 import { cn } from "@/lib/utils";
 
 type NavId =
@@ -33,7 +35,7 @@ function PlaceholderSection({ title }: { title: string }) {
     <div className="animate-fade-up space-y-3">
       <h1 className="font-display text-4xl font-bold tracking-tight">{title}</h1>
       <p className="max-w-lg text-muted-foreground">
-        Sección lista en la navegación. El CRUD llega en etapas posteriores.
+        Sección lista en la navegación. Llega en una etapa posterior.
       </p>
     </div>
   );
@@ -41,6 +43,11 @@ function PlaceholderSection({ title }: { title: string }) {
 
 export function App() {
   const [active, setActive] = useState<NavId>("dashboard");
+  const [financeTick, setFinanceTick] = useState(0);
+
+  const notifyMutation = useCallback(() => {
+    setFinanceTick((tick) => tick + 1);
+  }, []);
 
   return (
     <div className="flex h-full min-h-0">
@@ -50,7 +57,7 @@ export function App() {
             FinancialManager
           </p>
           <p className="mt-1 text-xs text-muted-foreground">
-            Finanzas locales · Etapa 3
+            Finanzas locales · Etapa 4
           </p>
         </div>
         <nav className="flex flex-1 flex-col gap-1">
@@ -77,9 +84,15 @@ export function App() {
       </aside>
 
       <main className="min-w-0 flex-1 overflow-auto p-6 md:p-8">
-        {active === "dashboard" ? <DashboardPage /> : null}
-        {active === "incomes" ? <PlaceholderSection title="Ingresos" /> : null}
-        {active === "expenses" ? <PlaceholderSection title="Egresos" /> : null}
+        {active === "dashboard" ? (
+          <DashboardPage refreshToken={financeTick} />
+        ) : null}
+        {active === "incomes" ? (
+          <IncomesPage onMutate={notifyMutation} />
+        ) : null}
+        {active === "expenses" ? (
+          <ExpensesPage onMutate={notifyMutation} />
+        ) : null}
         {active === "pending" ? (
           <PlaceholderSection title="Pagos pendientes" />
         ) : null}
