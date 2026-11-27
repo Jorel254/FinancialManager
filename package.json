@@ -14,8 +14,8 @@
     "smoke:db": "node scripts/smoke-db.mjs",
     "smoke:pending": "node scripts/smoke-pending-payments.mjs",
     "smoke:history": "node scripts/smoke-history.mjs",
-    "smoke:etapa8": "npx --yes tsx scripts/smoke-etapa-8.ts",
-    "smoke:settings": "npx --yes tsx scripts/smoke-settings.ts",
+    "smoke:etapa8": "npx --yes vite-node scripts/smoke-etapa-8.ts",
+    "smoke:settings": "npx --yes vite-node scripts/smoke-settings.ts",
     "smoke": "npm run smoke:db && npm run smoke:pending && npm run smoke:history && npm run smoke:etapa8 && npm run smoke:settings",
     "rebuild:native": "electron-rebuild -f -w better-sqlite3",
     "postinstall": "electron-rebuild -f -w better-sqlite3"
