@@ -84,6 +84,12 @@ export interface FinanceSummary {
   projectedBalanceCents: number;
 }
 
+/** Preferencias de la app (persistidas en SQLite) */
+export interface AppSettings {
+  /** Si true, oculta montos de ingresos y saldo disponible en la UI */
+  hideAmounts: boolean;
+}
+
 export type DueUrgency =
   | "overdue"
   | "today"

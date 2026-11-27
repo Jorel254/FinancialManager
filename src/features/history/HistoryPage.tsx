@@ -12,8 +12,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
+import { useSettings } from "@/features/settings/SettingsContext";
 import { getApi, hasApi } from "@/lib/api";
 import { formatDisplayDate } from "@/lib/dates";
+import { formatMaybeHiddenMxn } from "@/lib/mask-money";
 import { cn } from "@/lib/utils";
 
 const TYPE_OPTIONS: { value: "" | HistoryItemType; label: string }[] = [
@@ -90,6 +92,8 @@ interface HistoryPageProps {
 }
 
 export function HistoryPage({ refreshToken = 0 }: HistoryPageProps) {
+  const { settings } = useSettings();
+  const hideAmounts = settings.hideAmounts;
   const [draft, setDraft] = useState<FilterState>(emptyFilters);
   const [applied, setApplied] = useState<FilterState>(emptyFilters);
   const [items, setItems] = useState<HistoryItem[]>([]);
@@ -360,7 +364,9 @@ export function HistoryPage({ refreshToken = 0 }: HistoryPageProps) {
                       )}
                     >
                       {amountPrefix}
-                      {formatMxn(item.amountCents)}
+                      {item.type === "income"
+                        ? formatMaybeHiddenMxn(item.amountCents, hideAmounts)
+                        : formatMxn(item.amountCents)}
                     </p>
                   </div>
                 </div>

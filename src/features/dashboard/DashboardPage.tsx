@@ -10,8 +10,10 @@ import { formatMxn } from "@shared/money";
 import type { FinanceSummary, UpcomingPaymentItem } from "@shared/models";
 import { UrgencyLegend } from "@/components/UrgencyLegend";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useSettings } from "@/features/settings/SettingsContext";
 import { getApi, hasApi } from "@/lib/api";
 import { formatDisplayDate } from "@/lib/dates";
+import { formatMaybeHiddenMxn } from "@/lib/mask-money";
 import {
   cnUrgencyBadge,
   groupByUrgency,
@@ -42,6 +44,8 @@ interface DashboardPageProps {
 }
 
 export function DashboardPage({ refreshToken = 0 }: DashboardPageProps) {
+  const { settings } = useSettings();
+  const hideAmounts = settings.hideAmounts;
   const [summary, setSummary] = useState<FinanceSummary | null>(null);
   const [upcoming, setUpcoming] = useState<UpcomingPaymentItem[]>([]);
   const [ipcOk, setIpcOk] = useState(false);
@@ -91,32 +95,37 @@ export function DashboardPage({ refreshToken = 0 }: DashboardPageProps) {
       value: summary?.availableBalanceCents ?? 0,
       icon: Wallet,
       tone: "text-primary",
+      sensitive: true as const,
     },
     {
       title: "Ingresos del mes",
       value: summary?.incomeMonthCents ?? 0,
       icon: ArrowUpRight,
       tone: "text-income",
+      sensitive: true as const,
     },
     {
       title: "Egresos del mes",
       value: summary?.expenseMonthCents ?? 0,
       icon: ArrowDownRight,
       tone: "text-expense",
+      sensitive: false as const,
     },
     {
       title: "Pagos pendientes del mes",
       value: summary?.committedMonthCents ?? 0,
       icon: CalendarClock,
       tone: "text-pending",
+      sensitive: false as const,
     },
     {
       title: "Saldo proyectado",
       value: summary?.projectedBalanceCents ?? 0,
       icon: Target,
       tone: "text-primary",
+      sensitive: false as const,
     },
-  ] as const;
+  ];
 
   return (
     <div className="space-y-8">
@@ -168,7 +177,9 @@ export function DashboardPage({ refreshToken = 0 }: DashboardPageProps) {
               </CardHeader>
               <CardContent>
                 <p className="font-display text-3xl font-bold tracking-tight">
-                  {formatMxn(card.value)}
+                  {card.sensitive
+                    ? formatMaybeHiddenMxn(card.value, hideAmounts)
+                    : formatMxn(card.value)}
                 </p>
               </CardContent>
             </Card>

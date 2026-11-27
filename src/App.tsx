@@ -13,6 +13,8 @@ import { ExpensesPage } from "@/features/expenses/ExpensesPage";
 import { HistoryPage } from "@/features/history/HistoryPage";
 import { IncomesPage } from "@/features/incomes/IncomesPage";
 import { PendingPaymentsPage } from "@/features/pending-payments/PendingPaymentsPage";
+import { SettingsProvider } from "@/features/settings/SettingsContext";
+import { SettingsPage } from "@/features/settings/SettingsPage";
 import { cn } from "@/lib/utils";
 
 type NavId =
@@ -32,18 +34,7 @@ const navItems: { id: NavId; label: string; icon: typeof LayoutDashboard }[] = [
   { id: "settings", label: "Configuración", icon: Settings },
 ];
 
-function PlaceholderSection({ title }: { title: string }) {
-  return (
-    <div className="animate-fade-up space-y-3">
-      <h1 className="font-display text-4xl font-bold tracking-tight">{title}</h1>
-      <p className="max-w-lg text-muted-foreground">
-        Sección lista en la navegación. Llega en una etapa posterior.
-      </p>
-    </div>
-  );
-}
-
-export function App() {
+function AppShell() {
   const [active, setActive] = useState<NavId>("dashboard");
   const [financeTick, setFinanceTick] = useState(0);
 
@@ -59,7 +50,7 @@ export function App() {
             FinancialManager
           </p>
           <p className="mt-1 text-xs text-muted-foreground">
-            Finanzas locales · Etapa 8
+            Finanzas locales · Config
           </p>
         </div>
         <nav className="flex flex-1 flex-col gap-1">
@@ -101,10 +92,16 @@ export function App() {
         {active === "history" ? (
           <HistoryPage refreshToken={financeTick} />
         ) : null}
-        {active === "settings" ? (
-          <PlaceholderSection title="Configuración" />
-        ) : null}
+        {active === "settings" ? <SettingsPage /> : null}
       </main>
     </div>
+  );
+}
+
+export function App() {
+  return (
+    <SettingsProvider>
+      <AppShell />
+    </SettingsProvider>
   );
 }

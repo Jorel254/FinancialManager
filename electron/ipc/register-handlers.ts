@@ -1,6 +1,6 @@
 import { ipcMain } from "electron";
 import { IpcChannels, type IpcResult } from "../../shared/ipc-contract";
-import type { HistoryFilters } from "../../shared/models";
+import type { AppSettings, HistoryFilters } from "../../shared/models";
 import { isDbError } from "../db/errors";
 import { listCategories } from "../db/repositories/categories";
 import {
@@ -25,6 +25,10 @@ import {
   removeApplication,
   updatePendingPayment,
 } from "../db/repositories/pending-payments";
+import {
+  getAppSettings,
+  updateAppSettings,
+} from "../db/repositories/settings";
 
 function ok<T>(data: T): IpcResult<T> {
   return { ok: true, data };
@@ -103,5 +107,11 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle(IpcChannels.historyQuery, (_e, filters?: HistoryFilters) =>
     wrap(() => queryHistory(filters ?? {})),
+  );
+
+  ipcMain.handle(IpcChannels.settingsGet, () => wrap(() => getAppSettings()));
+  ipcMain.handle(
+    IpcChannels.settingsUpdate,
+    (_e, patch: Partial<AppSettings>) => wrap(() => updateAppSettings(patch)),
   );
 }

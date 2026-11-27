@@ -15,8 +15,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useSettings } from "@/features/settings/SettingsContext";
 import { getApi, hasApi } from "@/lib/api";
 import { formatDisplayDate, todayIsoDate } from "@/lib/dates";
+import { formatMaybeHiddenMxn } from "@/lib/mask-money";
 import { centsToInputValue, parsePesosInput } from "@/lib/money-input";
 import { cn } from "@/lib/utils";
 
@@ -107,6 +109,8 @@ const copy = {
 
 export function MovementCrudPage({ kind, onMutate }: MovementCrudPageProps) {
   const labels = copy[kind];
+  const { settings } = useSettings();
+  const hideSensitive = kind === "income" && settings.hideAmounts;
   const [items, setItems] = useState<MovementRow[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -325,7 +329,7 @@ export function MovementCrudPage({ kind, onMutate }: MovementCrudPageProps) {
                 labels.amountTone,
               )}
             >
-              {formatMxn(totalCents)}
+              {formatMaybeHiddenMxn(totalCents, hideSensitive)}
             </p>
           </CardContent>
         </Card>
@@ -399,7 +403,7 @@ export function MovementCrudPage({ kind, onMutate }: MovementCrudPageProps) {
                         labels.amountTone,
                       )}
                     >
-                      {formatMxn(row.amountCents)}
+                      {formatMaybeHiddenMxn(row.amountCents, hideSensitive)}
                     </p>
                     <Button
                       type="button"

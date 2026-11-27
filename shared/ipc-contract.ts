@@ -4,6 +4,7 @@
  */
 
 import type {
+  AppSettings,
   Category,
   CategoryKind,
   Expense,
@@ -39,6 +40,8 @@ export const IpcChannels = {
   pendingRemoveApplication: "fm:pending:removeApplication",
   financeSummary: "fm:finance:summary",
   historyQuery: "fm:history:query",
+  settingsGet: "fm:settings:get",
+  settingsUpdate: "fm:settings:update",
 } as const;
 
 export type IpcChannel = (typeof IpcChannels)[keyof typeof IpcChannels];
@@ -119,6 +122,10 @@ export interface FinancialManagerApi {
   };
   history: {
     query: (filters?: HistoryFilters) => Promise<IpcResult<HistoryItem[]>>;
+  };
+  settings: {
+    get: () => Promise<IpcResult<AppSettings>>;
+    update: (patch: Partial<AppSettings>) => Promise<IpcResult<AppSettings>>;
   };
 }
 

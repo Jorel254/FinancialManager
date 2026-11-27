@@ -5,6 +5,7 @@ import {
   type IpcResult,
 } from "../shared/ipc-contract";
 import type {
+  AppSettings,
   Category,
   CategoryKind,
   Expense,
@@ -68,6 +69,11 @@ const api: FinancialManagerApi = {
   history: {
     query: (filters: HistoryFilters = {}) =>
       invoke<HistoryItem[]>(IpcChannels.historyQuery, filters),
+  },
+  settings: {
+    get: () => invoke<AppSettings>(IpcChannels.settingsGet),
+    update: (patch) =>
+      invoke<AppSettings>(IpcChannels.settingsUpdate, patch),
   },
 };
 
