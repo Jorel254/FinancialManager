@@ -15,6 +15,14 @@ import {
   listIncomes,
   updateIncome,
 } from "../db/repositories/incomes";
+import {
+  applyPayment,
+  createPendingPayment,
+  deletePendingPayment,
+  listPendingPayments,
+  removeApplication,
+  updatePendingPayment,
+} from "../db/repositories/pending-payments";
 
 function ok<T>(data: T): IpcResult<T> {
   return { ok: true, data };
@@ -25,10 +33,7 @@ function fail<T>(code: string, message: string): IpcResult<T> {
 }
 
 function notImplemented<T>(): IpcResult<T> {
-  return fail(
-    "NOT_IMPLEMENTED",
-    "Pagos pendientes e historial llegan en Etapas 4–5 / 7",
-  );
+  return fail("NOT_IMPLEMENTED", "Historial llega en la Etapa 7");
 }
 
 function wrap<T>(fn: () => T): IpcResult<T> {
@@ -45,9 +50,9 @@ function wrap<T>(fn: () => T): IpcResult<T> {
 }
 
 /**
- * Handlers IPC — Etapa 3.
- * Reales: categorías, incomes CRUD, expenses CRUD, finance summary.
- * Pendientes/historial: stub hasta etapas posteriores.
+ * Handlers IPC — Etapa 5.
+ * Reales: categorías, incomes, expenses, pending payments, finance summary.
+ * Historial: stub hasta Etapa 7.
  */
 export function registerIpcHandlers(): void {
   ipcMain.handle(IpcChannels.categoriesList, (_e, kind) =>
@@ -76,12 +81,24 @@ export function registerIpcHandlers(): void {
     wrap(() => deleteExpense(id)),
   );
 
-  ipcMain.handle(IpcChannels.pendingList, () => ok([]));
-  ipcMain.handle(IpcChannels.pendingCreate, () => notImplemented());
-  ipcMain.handle(IpcChannels.pendingUpdate, () => notImplemented());
-  ipcMain.handle(IpcChannels.pendingDelete, () => notImplemented());
-  ipcMain.handle(IpcChannels.pendingApplyPayment, () => notImplemented());
-  ipcMain.handle(IpcChannels.pendingRemoveApplication, () => notImplemented());
+  ipcMain.handle(IpcChannels.pendingList, () =>
+    wrap(() => listPendingPayments()),
+  );
+  ipcMain.handle(IpcChannels.pendingCreate, (_e, input) =>
+    wrap(() => createPendingPayment(input)),
+  );
+  ipcMain.handle(IpcChannels.pendingUpdate, (_e, id, input) =>
+    wrap(() => updatePendingPayment(id, input)),
+  );
+  ipcMain.handle(IpcChannels.pendingDelete, (_e, id) =>
+    wrap(() => deletePendingPayment(id)),
+  );
+  ipcMain.handle(IpcChannels.pendingApplyPayment, (_e, input) =>
+    wrap(() => applyPayment(input)),
+  );
+  ipcMain.handle(IpcChannels.pendingRemoveApplication, (_e, applicationId) =>
+    wrap(() => removeApplication(applicationId)),
+  );
 
   ipcMain.handle(IpcChannels.financeSummary, (_e, month: string) =>
     wrap(() => getFinanceSummary(month)),

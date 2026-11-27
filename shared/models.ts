@@ -57,12 +57,6 @@ export interface PendingPayment {
   updatedAt: string;
 }
 
-/** Campos derivados al leer pendientes */
-export interface PendingPaymentView extends PendingPayment {
-  paidCents: number;
-  remainingCents: number;
-}
-
 export interface PaymentApplication {
   id: string;
   pendingPaymentId: string;
@@ -71,6 +65,13 @@ export interface PaymentApplication {
   notes: string | null;
   expenseId: string;
   createdAt: string;
+}
+
+/** Campos derivados al leer pendientes */
+export interface PendingPaymentView extends PendingPayment {
+  paidCents: number;
+  remainingCents: number;
+  applications: PaymentApplication[];
 }
 
 /** Resumen del dashboard para un mes YYYY-MM */

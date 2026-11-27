@@ -89,11 +89,3 @@ export function todayLocalIsoDate(): string {
   const d = String(now.getDate()).padStart(2, "0");
   return `${y}-${m}-${d}`;
 }
-
-export function daysBetween(fromIso: string, toIso: string): number {
-  const [fy, fm, fd] = fromIso.split("-").map(Number);
-  const [ty, tm, td] = toIso.split("-").map(Number);
-  const from = Date.UTC(fy, fm - 1, fd);
-  const to = Date.UTC(ty, tm - 1, td);
-  return Math.round((to - from) / 86_400_000);
-}

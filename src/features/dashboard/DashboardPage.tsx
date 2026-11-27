@@ -9,6 +9,14 @@ import { formatMxn } from "@shared/money";
 import type { FinanceSummary, UpcomingPaymentItem } from "@shared/models";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getApi, hasApi } from "@/lib/api";
+import { formatDisplayDate } from "@/lib/dates";
+import {
+  cnUrgencyBadge,
+  urgencyAccentBar,
+  urgencyLabels,
+  urgencyRowClass,
+} from "@/lib/urgency";
+import { cn } from "@/lib/utils";
 
 function currentMonth(): string {
   const now = new Date();
@@ -25,7 +33,7 @@ const metricClass = [
 ] as const;
 
 interface DashboardPageProps {
-  /** Se incrementa tras crear/editar/eliminar ingresos o egresos. */
+  /** Se incrementa tras mutaciones financieras. */
   refreshToken?: number;
 }
 
@@ -87,7 +95,7 @@ export function DashboardPage({ refreshToken = 0 }: DashboardPageProps) {
       tone: "text-expense",
     },
     {
-      title: "Comprometido del mes",
+      title: "Pagos pendientes del mes",
       value: summary?.committedMonthCents ?? 0,
       icon: CalendarClock,
       tone: "text-pending",
@@ -104,8 +112,8 @@ export function DashboardPage({ refreshToken = 0 }: DashboardPageProps) {
           Tu mes de un vistazo
         </h1>
         <p className="max-w-xl text-base text-muted-foreground">
-          El saldo se recalcula al registrar, editar o eliminar ingresos y
-          egresos. Los pagos pendientes llegan en la Etapa 5.
+          Saldo, movimientos del mes y compromisos reales. Los vencidos y
+          próximos se destacan al abrir.
         </p>
         <div className="flex flex-wrap items-center gap-3 pt-1">
           <span
@@ -125,6 +133,9 @@ export function DashboardPage({ refreshToken = 0 }: DashboardPageProps) {
           {summary ? (
             <span className="text-xs text-muted-foreground">
               Mes {summary.month}
+              {summary.projectedBalanceCents !== undefined
+                ? ` · Proyectado ${formatMxn(summary.projectedBalanceCents)}`
+                : ""}
             </span>
           ) : null}
         </div>
@@ -161,31 +172,50 @@ export function DashboardPage({ refreshToken = 0 }: DashboardPageProps) {
             {upcoming.length === 0 ? (
               <div className="rounded-xl border border-dashed border-border/80 bg-muted/40 px-5 py-10 text-center">
                 <p className="font-display text-lg font-semibold text-foreground">
-                  Sin compromisos aún
+                  Sin compromisos abiertos
                 </p>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  Los pagos pendientes se registran en la Etapa 5; el resumen ya
-                  refleja ingresos y egresos.
+                  Registra un pago pendiente para verlo aquí con resaltado de
+                  urgencia.
                 </p>
               </div>
             ) : (
-              <ul className="divide-y divide-border/70">
+              <ul className="space-y-2">
                 {upcoming.slice(0, 8).map((item) => (
                   <li
                     key={item.id}
-                    className="flex items-center justify-between gap-4 py-3"
+                    className={cn(
+                      "relative overflow-hidden rounded-xl border px-4 py-3",
+                      urgencyRowClass(item.urgency),
+                    )}
                   >
-                    <div>
-                      <p className="font-medium text-foreground">
-                        {item.description}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        Vence {item.dueOn} · {item.urgency}
+                    <span
+                      className={cn(
+                        "absolute inset-y-0 left-0 w-1",
+                        urgencyAccentBar(item.urgency),
+                      )}
+                    />
+                    <div className="flex items-center justify-between gap-4 pl-2">
+                      <div className="min-w-0 space-y-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="truncate font-medium text-foreground">
+                            {item.description}
+                          </p>
+                          <span className={cnUrgencyBadge(item.urgency)}>
+                            {urgencyLabels[item.urgency]}
+                          </span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Vence {formatDisplayDate(item.dueOn)}
+                          {item.status === "partial"
+                            ? ` · Parcial · resta ${formatMxn(item.remainingCents)}`
+                            : ""}
+                        </p>
+                      </div>
+                      <p className="shrink-0 font-display text-base font-semibold text-pending">
+                        {formatMxn(item.remainingCents)}
                       </p>
                     </div>
-                    <p className="font-display text-base font-semibold">
-                      {formatMxn(item.remainingCents)}
-                    </p>
                   </li>
                 ))}
               </ul>

@@ -1,13 +1,12 @@
 import type {
-  DueUrgency,
   FinanceSummary,
   PaymentPriority,
   PendingPaymentStatus,
   UpcomingPaymentItem,
 } from "../../../shared/models";
+import { urgencyFor, urgencyRank } from "../../../shared/due";
 import { getDatabase } from "../connection";
 import {
-  daysBetween,
   monthBounds,
   requireIsoMonth,
   todayLocalIsoDate,
@@ -32,33 +31,41 @@ interface UpcomingRow {
   remaining_cents: number;
 }
 
-function urgencyFor(dueOn: string, today: string): DueUrgency {
-  const delta = daysBetween(today, dueOn);
-  if (delta < 0) return "overdue";
-  if (delta === 0) return "today";
-  if (delta <= 3) return "within_3_days";
-  if (delta <= 7) return "within_7_days";
-  return "later";
-}
-
-function urgencyRank(urgency: DueUrgency): number {
-  switch (urgency) {
-    case "overdue":
-      return 0;
-    case "today":
-      return 1;
-    case "within_3_days":
-      return 2;
-    case "within_7_days":
-      return 3;
-    default:
-      return 4;
-  }
+interface ApplicationRow {
+  id: string;
+  pending_payment_id: string;
+  amount_cents: number;
+  applied_on: string;
+  notes: string | null;
+  expense_id: string;
+  created_at: string;
 }
 
 function sumCents(sql: string, params: unknown[] = []): number {
   const row = getDatabase().prepare(sql).get(...params) as SumRow;
   return row.total ?? 0;
+}
+
+function listApplicationsFor(pendingId: string) {
+  const rows = getDatabase()
+    .prepare(
+      `SELECT id, pending_payment_id, amount_cents, applied_on, notes,
+              expense_id, created_at
+       FROM payment_applications
+       WHERE pending_payment_id = ?
+       ORDER BY applied_on ASC, created_at ASC`,
+    )
+    .all(pendingId) as ApplicationRow[];
+
+  return rows.map((row) => ({
+    id: row.id,
+    pendingPaymentId: row.pending_payment_id,
+    amountCents: row.amount_cents,
+    appliedOn: row.applied_on,
+    notes: row.notes,
+    expenseId: row.expense_id,
+    createdAt: row.created_at,
+  }));
 }
 
 export function getFinanceSummary(monthInput: string): {
@@ -152,6 +159,7 @@ export function getFinanceSummary(monthInput: string): {
         updatedAt: row.updated_at,
         paidCents: row.paid_cents,
         remainingCents: row.remaining_cents,
+        applications: listApplicationsFor(row.id),
         urgency,
       };
     })

@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { DashboardPage } from "@/features/dashboard/DashboardPage";
 import { ExpensesPage } from "@/features/expenses/ExpensesPage";
 import { IncomesPage } from "@/features/incomes/IncomesPage";
+import { PendingPaymentsPage } from "@/features/pending-payments/PendingPaymentsPage";
 import { cn } from "@/lib/utils";
 
 type NavId =
@@ -57,7 +58,7 @@ export function App() {
             FinancialManager
           </p>
           <p className="mt-1 text-xs text-muted-foreground">
-            Finanzas locales · Etapa 4
+            Finanzas locales · Etapa 5
           </p>
         </div>
         <nav className="flex flex-1 flex-col gap-1">
@@ -94,7 +95,7 @@ export function App() {
           <ExpensesPage onMutate={notifyMutation} />
         ) : null}
         {active === "pending" ? (
-          <PlaceholderSection title="Pagos pendientes" />
+          <PendingPaymentsPage onMutate={notifyMutation} />
         ) : null}
         {active === "history" ? <PlaceholderSection title="Historial" /> : null}
         {active === "settings" ? (
