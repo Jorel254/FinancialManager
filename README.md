@@ -6,7 +6,7 @@ Aplicación de escritorio (Windows) para finanzas personales: ingresos, egresos,
 
 ## Estado
 
-**Etapa 9 lista:** instalador Windows NSIS (`.exe`) con `electron-builder`. La app empaquetada no requiere Node.js en el PC destino. SQLite permanece en `userData`.
+**Instalador Windows NSIS** (`.exe`) con `electron-builder`. La app empaquetada no requiere Node.js en el PC destino. SQLite permanece en `userData`.
 
 ## Cómo correr (desarrollo)
 
@@ -28,7 +28,7 @@ npm run dev
 | `npm run typecheck` | TypeScript (node + web) |
 | `npm run smoke` | Smokes de DB / pagos / historial / etapa 8 / settings |
 
-## Instalador Windows (Etapa 9)
+## Instalador Windows
 
 ### Generar
 
