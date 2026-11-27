@@ -1,87 +1,28 @@
-# Welcome to React Router!
+# FinancialManager
 
-A modern, production-ready template for building full-stack React applications using React Router.
+Aplicación de escritorio (Windows) para finanzas personales: ingresos, egresos, pagos pendientes y dashboard local.
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/remix-run/react-router-templates/tree/main/default)
+**Stack objetivo:** React · Electron · Vite · TypeScript · SQLite · shadcn/ui · Tailwind
 
-## Features
+## Estado
 
-- 🚀 Server-side rendering
-- ⚡️ Hot Module Replacement (HMR)
-- 📦 Asset bundling and optimization
-- 🔄 Data loading and mutations
-- 🔒 TypeScript by default
-- 🎉 TailwindCSS for styling
-- 📖 [React Router docs](https://reactrouter.com/)
+**Etapa 1 completada (arquitectura):** modelos, reglas de negocio, contrato IPC y estructura de carpetas documentados/esbozados.
 
-## Getting Started
+El scaffold `app/` + React Router SSR es **temporal** (create-react-router). En **Etapa 2** se reemplaza por Electron + Vite SPA usando `electron/`, `src/` y `shared/`.
 
-### Installation
-
-Install the dependencies:
-
-```bash
-npm install
-```
-
-### Development
-
-Start the development server with HMR:
-
-```bash
-npm run dev
-```
-
-Your application will be available at `http://localhost:5173`.
-
-## Building for Production
-
-Create a production build:
-
-```bash
-npm run build
-```
-
-## Deployment
-
-### Docker Deployment
-
-To build and run using Docker:
-
-```bash
-docker build -t my-app .
-
-# Run the container
-docker run -p 3000:3000 my-app
-```
-
-The containerized application can be deployed to any platform that supports Docker, including:
-
-- AWS ECS
-- Google Cloud Run
-- Azure Container Apps
-- Digital Ocean App Platform
-- Fly.io
-- Railway
-
-### DIY Deployment
-
-If you're familiar with deploying Node applications, the built-in app server is production-ready.
-
-Make sure to deploy the output of `npm run build`
+## Estructura objetivo
 
 ```
-├── package.json
-├── package-lock.json (or pnpm-lock.yaml, or bun.lockb)
-├── build/
-│   ├── client/    # Static assets
-│   └── server/    # Server-side code
+electron/     # main, preload, IPC, SQLite
+shared/       # modelos, dinero (centavos), contrato IPC
+src/          # renderer React + shadcn
+resources/    # iconos / empaquetado
 ```
 
-## Styling
+## Desarrollo
 
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
+Scripts actuales del scaffold web (`npm run dev`) no son el runtime final de escritorio. Etapa 2 definirá `dev`/`build` de Electron.
 
----
+## Documentación
 
-Built with ❤️ using React Router.
+La arquitectura de Etapa 1 vive en el Project store del equipo (`docs/etapa-1-arquitectura.md`).
