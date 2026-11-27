@@ -5,6 +5,27 @@ import { cn } from "@/lib/utils";
 
 export { urgencyFor, urgencyLabels, urgencyRank };
 
+/** Orden de secciones en listas (vencidos → … → resto). */
+export const urgencyGroupOrder: DueUrgency[] = [
+  "overdue",
+  "today",
+  "within_3_days",
+  "within_7_days",
+  "later",
+];
+
+export const urgencyGroupTitles: Record<DueUrgency, string> = {
+  overdue: "Vencidos",
+  today: "Vencen hoy",
+  within_3_days: "Próximos 3 días",
+  within_7_days: "Próximos 7 días",
+  later: "Más adelante",
+};
+
+export type PaymentListGroup<T> =
+  | { kind: "urgency"; urgency: DueUrgency; title: string; items: T[] }
+  | { kind: "paid"; title: "Liquidados"; items: T[] };
+
 export function urgencyOf(dueOn: string, today = todayIsoDate()): DueUrgency {
   return urgencyFor(dueOn, today);
 }
@@ -32,9 +53,9 @@ export function urgencyRowClass(urgency: DueUrgency, paid = false): string {
     case "today":
       return "border-pending/45 bg-pending/10";
     case "within_3_days":
-      return "border-pending/30 bg-pending/5";
+      return "border-pending/30 bg-pending/[0.07]";
     case "within_7_days":
-      return "border-primary/30 bg-primary/5";
+      return "border-primary/30 bg-primary/[0.07]";
     default:
       return "border-border/60 bg-card/80";
   }
@@ -83,4 +104,37 @@ export function cnUrgencyBadge(urgency: DueUrgency, className?: string) {
     urgencyBadgeClass(urgency),
     className,
   );
+}
+
+export function groupByUrgency<T extends { dueOn: string; status?: string }>(
+  items: T[],
+  today = todayIsoDate(),
+): PaymentListGroup<T>[] {
+  const buckets = new Map<DueUrgency, T[]>();
+  for (const key of urgencyGroupOrder) buckets.set(key, []);
+
+  const paid: T[] = [];
+  for (const item of items) {
+    if (item.status === "paid") {
+      paid.push(item);
+      continue;
+    }
+    const urgency = urgencyOf(item.dueOn, today);
+    buckets.get(urgency)!.push(item);
+  }
+
+  const groups: PaymentListGroup<T>[] = urgencyGroupOrder
+    .map((urgency) => ({
+      kind: "urgency" as const,
+      urgency,
+      title: urgencyGroupTitles[urgency],
+      items: buckets.get(urgency) ?? [],
+    }))
+    .filter((group) => group.items.length > 0);
+
+  if (paid.length > 0) {
+    groups.push({ kind: "paid", title: "Liquidados", items: paid });
+  }
+
+  return groups;
 }

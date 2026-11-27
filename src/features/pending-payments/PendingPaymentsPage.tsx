@@ -20,6 +20,7 @@ import type {
   PaymentPriority,
   PendingPaymentView,
 } from "@shared/models";
+import { UrgencyLegend } from "@/components/UrgencyLegend";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog } from "@/components/ui/dialog";
@@ -32,6 +33,7 @@ import { formatDisplayDate, todayIsoDate } from "@/lib/dates";
 import { centsToInputValue, parsePesosInput } from "@/lib/money-input";
 import {
   cnUrgencyBadge,
+  groupByUrgency,
   priorityLabel,
   statusLabel,
   urgencyAccentBar,
@@ -162,6 +164,8 @@ export function PendingPaymentsPage({ onMutate }: PendingPaymentsPageProps) {
     }
     return items;
   }, [filter, items]);
+
+  const grouped = useMemo(() => groupByUrgency(visible), [visible]);
 
   const openItems = items.filter((item) => item.status !== "paid");
   const remainingOpenCents = openItems.reduce(
@@ -402,24 +406,27 @@ export function PendingPaymentsPage({ onMutate }: PendingPaymentsPageProps) {
         </Card>
       </section>
 
-      <div className="animate-fade-up-delay-1 flex flex-wrap gap-2">
-        {(
-          [
-            { id: "open", label: "Activos" },
-            { id: "paid", label: "Liquidados" },
-            { id: "all", label: "Todos" },
-          ] as const
-        ).map((tab) => (
-          <Button
-            key={tab.id}
-            type="button"
-            size="sm"
-            variant={filter === tab.id ? "default" : "outline"}
-            onClick={() => setFilter(tab.id)}
-          >
-            {tab.label}
-          </Button>
-        ))}
+      <div className="animate-fade-up-delay-1 space-y-3">
+        <div className="flex flex-wrap gap-2">
+          {(
+            [
+              { id: "open", label: "Activos" },
+              { id: "paid", label: "Liquidados" },
+              { id: "all", label: "Todos" },
+            ] as const
+          ).map((tab) => (
+            <Button
+              key={tab.id}
+              type="button"
+              size="sm"
+              variant={filter === tab.id ? "default" : "outline"}
+              onClick={() => setFilter(tab.id)}
+            >
+              {tab.label}
+            </Button>
+          ))}
+        </div>
+        {filter !== "paid" ? <UrgencyLegend /> : null}
       </div>
 
       {error ? (
@@ -458,113 +465,137 @@ export function PendingPaymentsPage({ onMutate }: PendingPaymentsPageProps) {
             </CardContent>
           </Card>
         ) : (
-          <ul className="space-y-3">
-            {visible.map((item) => {
-              const urgency = urgencyOf(item.dueOn);
-              const isPaid = item.status === "paid";
-              return (
-                <li
-                  key={item.id}
-                  className={cn(
-                    "relative overflow-hidden rounded-2xl border px-4 py-4 backdrop-blur-sm transition-colors",
-                    urgencyRowClass(urgency, isPaid),
+          <div className="space-y-6">
+            {grouped.map((group) => (
+              <section key={group.title} className="space-y-3">
+                <div className="flex items-center gap-2">
+                  {group.kind === "urgency" ? (
+                    <span className={cnUrgencyBadge(group.urgency)}>
+                      {group.title}
+                    </span>
+                  ) : (
+                    <span className="rounded-md border border-income/40 bg-income/10 px-2 py-0.5 text-[11px] font-semibold text-income">
+                      {group.title}
+                    </span>
                   )}
-                >
-                  <span
-                    className={cn(
-                      "absolute inset-y-0 left-0 w-1",
-                      isPaid ? "bg-income/60" : urgencyAccentBar(urgency),
-                    )}
-                  />
-                  <div className="flex flex-col gap-3 pl-2 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="min-w-0 space-y-2">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <p className="truncate font-medium text-foreground">
-                          {item.description}
-                        </p>
-                        {!isPaid ? (
-                          <span className={cnUrgencyBadge(urgency)}>
-                            {urgencyLabels[urgency]}
-                          </span>
-                        ) : null}
-                        <span className="rounded-md border border-border/70 bg-muted/50 px-2 py-0.5 text-[11px] text-muted-foreground">
-                          {statusLabel(item.status)}
-                        </span>
-                        <span className="rounded-md border border-border/70 bg-muted/50 px-2 py-0.5 text-[11px] text-muted-foreground">
-                          {categoryName(item.categoryId)}
-                        </span>
-                        <span className="rounded-md border border-border/70 bg-muted/50 px-2 py-0.5 text-[11px] text-muted-foreground">
-                          Prioridad {priorityLabel(item.priority)}
-                        </span>
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        Vence {formatDisplayDate(item.dueOn)}
-                        {item.paidCents > 0
-                          ? ` · Pagado ${formatMxn(item.paidCents)} de ${formatMxn(item.totalAmountCents)}`
-                          : ` · Total ${formatMxn(item.totalAmountCents)}`}
-                        {item.notes ? ` · ${item.notes}` : ""}
-                      </p>
-                    </div>
+                  <span className="text-xs text-muted-foreground">
+                    {group.items.length}
+                  </span>
+                </div>
+                <ul className="space-y-3">
+                  {group.items.map((item) => {
+                    const urgency = urgencyOf(item.dueOn);
+                    const isPaid = item.status === "paid";
+                    return (
+                      <li
+                        key={item.id}
+                        className={cn(
+                          "relative overflow-hidden rounded-2xl border px-4 py-4 backdrop-blur-sm transition-colors",
+                          urgencyRowClass(urgency, isPaid),
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            "absolute inset-y-0 left-0 w-1",
+                            isPaid ? "bg-income/60" : urgencyAccentBar(urgency),
+                          )}
+                        />
+                        <div className="flex flex-col gap-3 pl-2 sm:flex-row sm:items-center sm:justify-between">
+                          <div className="min-w-0 space-y-2">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <p className="truncate font-medium text-foreground">
+                                {item.description}
+                              </p>
+                              {!isPaid ? (
+                                <span className={cnUrgencyBadge(urgency)}>
+                                  {urgencyLabels[urgency]}
+                                </span>
+                              ) : null}
+                              <span className="rounded-md border border-border/70 bg-muted/50 px-2 py-0.5 text-[11px] text-muted-foreground">
+                                {statusLabel(item.status)}
+                              </span>
+                              <span className="rounded-md border border-border/70 bg-muted/50 px-2 py-0.5 text-[11px] text-muted-foreground">
+                                {categoryName(item.categoryId)}
+                              </span>
+                              <span className="rounded-md border border-border/70 bg-muted/50 px-2 py-0.5 text-[11px] text-muted-foreground">
+                                Prioridad {priorityLabel(item.priority)}
+                              </span>
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                              Vence {formatDisplayDate(item.dueOn)}
+                              {item.paidCents > 0
+                                ? ` · Pagado ${formatMxn(item.paidCents)} de ${formatMxn(item.totalAmountCents)}`
+                                : ` · Total ${formatMxn(item.totalAmountCents)}`}
+                              {item.notes ? ` · ${item.notes}` : ""}
+                            </p>
+                          </div>
 
-                    <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-                      <p className="font-display text-xl font-bold tabular-nums text-pending">
-                        {formatMxn(isPaid ? item.totalAmountCents : item.remainingCents)}
-                      </p>
-                      {!isPaid ? (
-                        <>
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="outline"
-                            onClick={() => openApply(item, "partial")}
-                          >
-                            <CircleDollarSign className="h-4 w-4" />
-                            Parcial
-                          </Button>
-                          <Button
-                            type="button"
-                            size="sm"
-                            onClick={() => openApply(item, "full")}
-                          >
-                            <CheckCircle2 className="h-4 w-4" />
-                            Marcar pagado
-                          </Button>
-                        </>
-                      ) : null}
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setDetail(item)}
-                        aria-label="Ver aplicaciones"
-                      >
-                        <ListTree className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => openEdit(item)}
-                        aria-label="Editar"
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="text-destructive hover:text-destructive"
-                        onClick={() => setConfirmDelete(item)}
-                        aria-label="Eliminar"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
+                          <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+                            <p className="font-display text-xl font-bold tabular-nums text-pending">
+                              {formatMxn(
+                                isPaid
+                                  ? item.totalAmountCents
+                                  : item.remainingCents,
+                              )}
+                            </p>
+                            {!isPaid ? (
+                              <>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => openApply(item, "partial")}
+                                >
+                                  <CircleDollarSign className="h-4 w-4" />
+                                  Parcial
+                                </Button>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  onClick={() => openApply(item, "full")}
+                                >
+                                  <CheckCircle2 className="h-4 w-4" />
+                                  Marcar pagado
+                                </Button>
+                              </>
+                            ) : null}
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => setDetail(item)}
+                              aria-label="Ver aplicaciones"
+                            >
+                              <ListTree className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => openEdit(item)}
+                              aria-label="Editar"
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="text-destructive hover:text-destructive"
+                              onClick={() => setConfirmDelete(item)}
+                              aria-label="Eliminar"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </section>
+            ))}
+          </div>
         )}
       </section>
 

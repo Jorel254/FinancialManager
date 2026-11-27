@@ -1,17 +1,20 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ArrowDownRight,
   ArrowUpRight,
   CalendarClock,
+  Target,
   Wallet,
 } from "lucide-react";
 import { formatMxn } from "@shared/money";
 import type { FinanceSummary, UpcomingPaymentItem } from "@shared/models";
+import { UrgencyLegend } from "@/components/UrgencyLegend";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getApi, hasApi } from "@/lib/api";
 import { formatDisplayDate } from "@/lib/dates";
 import {
   cnUrgencyBadge,
+  groupByUrgency,
   urgencyAccentBar,
   urgencyLabels,
   urgencyRowClass,
@@ -29,6 +32,7 @@ const metricClass = [
   "animate-fade-up",
   "animate-fade-up-delay-1",
   "animate-fade-up-delay-2",
+  "animate-fade-up-delay-3",
   "animate-fade-up-delay-3",
 ] as const;
 
@@ -75,6 +79,12 @@ export function DashboardPage({ refreshToken = 0 }: DashboardPageProps) {
     };
   }, [refreshToken]);
 
+  const upcomingPreview = useMemo(() => upcoming.slice(0, 8), [upcoming]);
+  const groupedUpcoming = useMemo(
+    () => groupByUrgency(upcomingPreview),
+    [upcomingPreview],
+  );
+
   const cards = [
     {
       title: "Saldo disponible",
@@ -99,6 +109,12 @@ export function DashboardPage({ refreshToken = 0 }: DashboardPageProps) {
       value: summary?.committedMonthCents ?? 0,
       icon: CalendarClock,
       tone: "text-pending",
+    },
+    {
+      title: "Saldo proyectado",
+      value: summary?.projectedBalanceCents ?? 0,
+      icon: Target,
+      tone: "text-primary",
     },
   ] as const;
 
@@ -133,9 +149,6 @@ export function DashboardPage({ refreshToken = 0 }: DashboardPageProps) {
           {summary ? (
             <span className="text-xs text-muted-foreground">
               Mes {summary.month}
-              {summary.projectedBalanceCents !== undefined
-                ? ` · Proyectado ${formatMxn(summary.projectedBalanceCents)}`
-                : ""}
             </span>
           ) : null}
         </div>
@@ -144,7 +157,7 @@ export function DashboardPage({ refreshToken = 0 }: DashboardPageProps) {
         ) : null}
       </header>
 
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
         {cards.map((card, index) => {
           const Icon = card.icon;
           return (
@@ -165,8 +178,9 @@ export function DashboardPage({ refreshToken = 0 }: DashboardPageProps) {
 
       <section className="animate-fade-up-delay-3">
         <Card>
-          <CardHeader>
+          <CardHeader className="space-y-3">
             <CardTitle>Próximos pagos</CardTitle>
+            {upcoming.length > 0 ? <UrgencyLegend /> : null}
           </CardHeader>
           <CardContent>
             {upcoming.length === 0 ? (
@@ -180,45 +194,66 @@ export function DashboardPage({ refreshToken = 0 }: DashboardPageProps) {
                 </p>
               </div>
             ) : (
-              <ul className="space-y-2">
-                {upcoming.slice(0, 8).map((item) => (
-                  <li
-                    key={item.id}
-                    className={cn(
-                      "relative overflow-hidden rounded-xl border px-4 py-3",
-                      urgencyRowClass(item.urgency),
-                    )}
-                  >
-                    <span
-                      className={cn(
-                        "absolute inset-y-0 left-0 w-1",
-                        urgencyAccentBar(item.urgency),
+              <div className="space-y-5">
+                {groupedUpcoming.map((group) => (
+                  <div key={group.title} className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      {group.kind === "urgency" ? (
+                        <span className={cnUrgencyBadge(group.urgency)}>
+                          {group.title}
+                        </span>
+                      ) : (
+                        <span className="rounded-md border border-income/40 bg-income/10 px-2 py-0.5 text-[11px] font-semibold text-income">
+                          {group.title}
+                        </span>
                       )}
-                    />
-                    <div className="flex items-center justify-between gap-4 pl-2">
-                      <div className="min-w-0 space-y-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <p className="truncate font-medium text-foreground">
-                            {item.description}
-                          </p>
-                          <span className={cnUrgencyBadge(item.urgency)}>
-                            {urgencyLabels[item.urgency]}
-                          </span>
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                          Vence {formatDisplayDate(item.dueOn)}
-                          {item.status === "partial"
-                            ? ` · Parcial · resta ${formatMxn(item.remainingCents)}`
-                            : ""}
-                        </p>
-                      </div>
-                      <p className="shrink-0 font-display text-base font-semibold text-pending">
-                        {formatMxn(item.remainingCents)}
-                      </p>
+                      <span className="text-xs text-muted-foreground">
+                        {group.items.length}
+                      </span>
                     </div>
-                  </li>
+                    <ul className="space-y-2">
+                      {group.items.map((item) => (
+                        <li
+                          key={item.id}
+                          className={cn(
+                            "relative overflow-hidden rounded-xl border px-4 py-3",
+                            urgencyRowClass(item.urgency),
+                          )}
+                        >
+                          <span
+                            className={cn(
+                              "absolute inset-y-0 left-0 w-1",
+                              urgencyAccentBar(item.urgency),
+                            )}
+                          />
+                          <div className="flex items-center justify-between gap-4 pl-2">
+                            <div className="min-w-0 space-y-1">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <p className="truncate font-medium text-foreground">
+                                  {item.description}
+                                </p>
+                                <span className={cnUrgencyBadge(item.urgency)}>
+                                  {urgencyLabels[item.urgency]}
+                                </span>
+                              </div>
+                              <p className="text-xs text-muted-foreground">
+                                Vence {formatDisplayDate(item.dueOn)}
+                                {item.status === "partial"
+                                  ? ` · Parcial · resta ${formatMxn(item.remainingCents)}`
+                                  : ""}
+                                {` · Prioridad ${item.priority === 1 ? "alta" : item.priority === 2 ? "media" : "baja"}`}
+                              </p>
+                            </div>
+                            <p className="shrink-0 font-display text-base font-semibold text-pending">
+                              {formatMxn(item.remainingCents)}
+                            </p>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 ))}
-              </ul>
+              </div>
             )}
           </CardContent>
         </Card>
