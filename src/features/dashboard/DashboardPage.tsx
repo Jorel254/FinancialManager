@@ -6,7 +6,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { formatMxn } from "@shared/money";
-import type { FinanceSummary } from "@shared/models";
+import type { FinanceSummary, UpcomingPaymentItem } from "@shared/models";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getApi, hasApi } from "@/lib/api";
 
@@ -26,6 +26,7 @@ const metricClass = [
 
 export function DashboardPage() {
   const [summary, setSummary] = useState<FinanceSummary | null>(null);
+  const [upcoming, setUpcoming] = useState<UpcomingPaymentItem[]>([]);
   const [ipcOk, setIpcOk] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -46,6 +47,7 @@ export function DashboardPage() {
         }
         setIpcOk(true);
         setSummary(result.data.summary);
+        setUpcoming(result.data.upcoming);
       } catch (err) {
         if (!cancelled) {
           setError(err instanceof Error ? err.message : "Error al consultar IPC");
@@ -96,8 +98,8 @@ export function DashboardPage() {
           Tu mes de un vistazo
         </h1>
         <p className="max-w-xl text-base text-muted-foreground">
-          Indicadores conectados por IPC. La persistencia SQLite llega en la
-          Etapa 3; por ahora los totales están en cero.
+          Indicadores desde SQLite vía IPC. Sin movimientos aún verás ceros;
+          el CRUD visual de ingresos/egresos llega en la Etapa 4.
         </p>
         <div className="flex flex-wrap items-center gap-3 pt-1">
           <span
@@ -150,15 +152,38 @@ export function DashboardPage() {
             <CardTitle>Próximos pagos</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="rounded-xl border border-dashed border-border/80 bg-muted/40 px-5 py-10 text-center">
-              <p className="font-display text-lg font-semibold text-foreground">
-                Sin compromisos aún
-              </p>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Cuando cableemos SQLite, aquí verás vencidos y próximos con
-                resaltado visual.
-              </p>
-            </div>
+            {upcoming.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-border/80 bg-muted/40 px-5 py-10 text-center">
+                <p className="font-display text-lg font-semibold text-foreground">
+                  Sin compromisos aún
+                </p>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Los pagos pendientes se registran en la Etapa 5; el resumen ya
+                  lee la base local.
+                </p>
+              </div>
+            ) : (
+              <ul className="divide-y divide-border/70">
+                {upcoming.slice(0, 8).map((item) => (
+                  <li
+                    key={item.id}
+                    className="flex items-center justify-between gap-4 py-3"
+                  >
+                    <div>
+                      <p className="font-medium text-foreground">
+                        {item.description}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Vence {item.dueOn} · {item.urgency}
+                      </p>
+                    </div>
+                    <p className="font-display text-base font-semibold">
+                      {formatMxn(item.remainingCents)}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            )}
           </CardContent>
         </Card>
       </section>

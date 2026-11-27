@@ -44,13 +44,13 @@ export function App() {
 
   return (
     <div className="flex h-full min-h-0">
-      <aside className="flex w-60 shrink-0 flex-col border-r border-border/70 bg-card/40 px-3 py-5 backdrop-blur-md">
+      <aside className="flex w-80 shrink-0 flex-col border-r border-border/70 bg-card/40 px-3 py-5 backdrop-blur-md">
         <div className="mb-8 px-3">
           <p className="font-display text-xl font-extrabold tracking-tight text-primary">
             FinancialManager
           </p>
           <p className="mt-1 text-xs text-muted-foreground">
-            Finanzas locales · Etapa 2
+            Finanzas locales · Etapa 3
           </p>
         </div>
         <nav className="flex flex-1 flex-col gap-1">

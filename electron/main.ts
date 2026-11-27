@@ -1,5 +1,6 @@
 import { app, BrowserWindow, shell } from "electron";
 import { join } from "node:path";
+import { closeDatabase, getDbPath, openDatabase } from "./db/connection";
 import { registerIpcHandlers } from "./ipc/register-handlers";
 
 const isDev = Boolean(process.env.ELECTRON_RENDERER_URL);
@@ -54,6 +55,13 @@ function createWindow(): void {
 }
 
 app.whenReady().then(() => {
+  const db = openDatabase();
+  if (isDev) {
+    console.log(`[db] SQLite en ${getDbPath()}`);
+  }
+  // Touch para fallar temprano si el nativo no carga
+  db.pragma("foreign_keys");
+
   registerIpcHandlers();
   createWindow();
 
@@ -62,6 +70,10 @@ app.whenReady().then(() => {
       createWindow();
     }
   });
+});
+
+app.on("before-quit", () => {
+  closeDatabase();
 });
 
 app.on("window-all-closed", () => {
