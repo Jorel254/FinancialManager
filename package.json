@@ -11,8 +11,11 @@
     "build": "electron-vite build",
     "preview": "electron-vite preview",
     "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
+    "smoke:db": "node scripts/smoke-db.mjs",
     "smoke:pending": "node scripts/smoke-pending-payments.mjs",
     "smoke:history": "node scripts/smoke-history.mjs",
+    "smoke:etapa8": "npx --yes tsx scripts/smoke-etapa-8.ts",
+    "smoke": "npm run smoke:db && npm run smoke:pending && npm run smoke:history && npm run smoke:etapa8",
     "rebuild:native": "electron-rebuild -f -w better-sqlite3",
     "postinstall": "electron-rebuild -f -w better-sqlite3"
   },

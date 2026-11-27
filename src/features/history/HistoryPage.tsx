@@ -162,6 +162,11 @@ export function HistoryPage({ refreshToken = 0 }: HistoryPageProps) {
 
   function applyFilters(event?: FormEvent) {
     event?.preventDefault();
+    if (draft.from && draft.to && draft.from > draft.to) {
+      setError("La fecha «desde» no puede ser posterior a «hasta».");
+      return;
+    }
+    setError(null);
     setApplied({ ...draft });
   }
 

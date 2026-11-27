@@ -115,8 +115,10 @@ export function queryHistory(filtersInput: HistoryFilters = {}): HistoryItem[] {
     params.push(to);
   }
   if (query) {
-    where.push("h.description LIKE ? COLLATE NOCASE");
-    params.push(`%${query}%`);
+    // Escapa comodines LIKE para buscar el texto literal del usuario.
+    const escaped = query.replace(/([%_\\])/g, "\\$1");
+    where.push("h.description LIKE ? ESCAPE '\\' COLLATE NOCASE");
+    params.push(`%${escaped}%`);
   }
 
   const whereSql = where.length > 0 ? `WHERE ${where.join(" AND ")}` : "";

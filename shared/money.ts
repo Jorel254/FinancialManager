@@ -3,11 +3,27 @@
  * Display sugerido: es-MX / MXN.
  */
 
+/** Convierte pesos (número) a centavos redondeando a 2 decimales vía string. */
 export function pesosToCents(pesos: number): number {
   if (!Number.isFinite(pesos)) {
     throw new Error("Monto inválido");
   }
-  return Math.round(pesos * 100);
+  return parsePesosDecimalString(pesos.toFixed(2));
+}
+
+/**
+ * Parsea un decimal en texto (`1234.56` o `1234`) a centavos enteros
+ * sin pasar por aritmética flotante.
+ */
+export function parsePesosDecimalString(normalized: string): number {
+  const match = /^(-?)(\d+)(?:\.(\d{0,2}))?$/.exec(normalized);
+  if (!match) {
+    throw new Error("Monto inválido");
+  }
+  const sign = match[1] === "-" ? -1 : 1;
+  const whole = Number(match[2]);
+  const frac = (match[3] ?? "").padEnd(2, "0").slice(0, 2);
+  return sign * (whole * 100 + Number(frac));
 }
 
 export function centsToPesos(cents: number): number {

@@ -59,7 +59,7 @@ export function App() {
             FinancialManager
           </p>
           <p className="mt-1 text-xs text-muted-foreground">
-            Finanzas locales · Etapa 7
+            Finanzas locales · Etapa 8
           </p>
         </div>
         <nav className="flex flex-1 flex-col gap-1">
