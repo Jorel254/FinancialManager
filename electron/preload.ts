@@ -10,6 +10,7 @@ import type {
   Expense,
   FinanceSummary,
   HistoryFilters,
+  HistoryItem,
   Income,
   PaymentApplication,
   PendingPaymentView,
@@ -65,8 +66,8 @@ const api: FinancialManagerApi = {
       ),
   },
   history: {
-    query: (filters: HistoryFilters) =>
-      invoke<unknown[]>(IpcChannels.historyQuery, filters),
+    query: (filters: HistoryFilters = {}) =>
+      invoke<HistoryItem[]>(IpcChannels.historyQuery, filters),
   },
 };
 

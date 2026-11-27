@@ -9,6 +9,7 @@ import type {
   Expense,
   FinanceSummary,
   HistoryFilters,
+  HistoryItem,
   Income,
   PaymentApplication,
   PendingPayment,
@@ -117,7 +118,7 @@ export interface FinancialManagerApi {
     >;
   };
   history: {
-    query: (filters: HistoryFilters) => Promise<IpcResult<unknown[]>>;
+    query: (filters?: HistoryFilters) => Promise<IpcResult<HistoryItem[]>>;
   };
 }
 

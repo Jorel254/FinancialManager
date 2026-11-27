@@ -1,5 +1,6 @@
 import { ipcMain } from "electron";
 import { IpcChannels, type IpcResult } from "../../shared/ipc-contract";
+import type { HistoryFilters } from "../../shared/models";
 import { isDbError } from "../db/errors";
 import { listCategories } from "../db/repositories/categories";
 import {
@@ -9,6 +10,7 @@ import {
   updateExpense,
 } from "../db/repositories/expenses";
 import { getFinanceSummary } from "../db/repositories/finance";
+import { queryHistory } from "../db/repositories/history";
 import {
   createIncome,
   deleteIncome,
@@ -32,10 +34,6 @@ function fail<T>(code: string, message: string): IpcResult<T> {
   return { ok: false, error: { code, message } };
 }
 
-function notImplemented<T>(): IpcResult<T> {
-  return fail("NOT_IMPLEMENTED", "Historial llega en la Etapa 7");
-}
-
 function wrap<T>(fn: () => T): IpcResult<T> {
   try {
     return ok(fn());
@@ -50,9 +48,8 @@ function wrap<T>(fn: () => T): IpcResult<T> {
 }
 
 /**
- * Handlers IPC — Etapa 5.
- * Reales: categorías, incomes, expenses, pending payments, finance summary.
- * Historial: stub hasta Etapa 7.
+ * Handlers IPC — Etapa 7.
+ * Reales: categorías, incomes, expenses, pending, finance, history.
  */
 export function registerIpcHandlers(): void {
   ipcMain.handle(IpcChannels.categoriesList, (_e, kind) =>
@@ -104,5 +101,7 @@ export function registerIpcHandlers(): void {
     wrap(() => getFinanceSummary(month)),
   );
 
-  ipcMain.handle(IpcChannels.historyQuery, () => notImplemented());
+  ipcMain.handle(IpcChannels.historyQuery, (_e, filters?: HistoryFilters) =>
+    wrap(() => queryHistory(filters ?? {})),
+  );
 }

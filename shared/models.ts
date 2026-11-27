@@ -95,10 +95,37 @@ export interface UpcomingPaymentItem extends PendingPaymentView {
   urgency: DueUrgency;
 }
 
+/** Tipos unificados del historial (filtro + filas) */
+export type HistoryItemType =
+  | "income"
+  | "expense"
+  | "pending"
+  | "application";
+
 export interface HistoryFilters {
-  type?: "income" | "expense" | "pending" | "application";
+  type?: HistoryItemType;
   categoryId?: string;
   from?: string; // YYYY-MM-DD
   to?: string;
   query?: string;
+}
+
+/** Fila unificada para la sección Historial */
+export interface HistoryItem {
+  id: string;
+  type: HistoryItemType;
+  description: string;
+  amountCents: number;
+  /** Fecha relevante: recepción / gasto / vencimiento / aplicación */
+  date: string;
+  categoryId: string;
+  categoryName: string;
+  notes: string | null;
+  /** Solo type=pending */
+  status?: PendingPaymentStatus;
+  /** Solo type=pending */
+  remainingCents?: number;
+  /** type=expense ligado a liquidación, o type=application */
+  pendingPaymentId?: string | null;
+  createdAt: string;
 }
