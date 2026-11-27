@@ -1,0 +1,65 @@
+# Empaquetado Windows — FinancialManager (Etapa 9)
+# Genera un instalador NSIS (.exe) autónomo: no requiere Node.js en el PC destino.
+#
+# Persistencia: SQLite vive en userData de Electron
+#   %APPDATA%\financialmanager\financial-manager.sqlite
+# No se escribe en la carpeta de instalación. Al desinstalar, deleteAppDataOnUninstall
+# queda en false para no borrar la DB del usuario.
+
+appId: com.santiago.financialmanager
+productName: FinancialManager
+copyright: Copyright © 2026 Santiago
+
+directories:
+  output: release
+  buildResources: resources
+
+files:
+  - out/**/*
+  - package.json
+  - '!**/*.map'
+  - '!src/**/*'
+  - '!electron/**/*'
+  - '!shared/**/*'
+  - '!scripts/**/*'
+  - '!*.tsbuildinfo'
+  - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
+  - '!electron.vite.config.ts'
+  - '!components.json'
+  - '!README.md'
+
+# better-sqlite3: módulo nativo; el .node no puede vivir dentro de app.asar.
+asar: true
+asarUnpack:
+  - node_modules/better-sqlite3/**
+
+# Rebuild nativo contra la ABI de Electron al empaquetar.
+npmRebuild: true
+
+# Solo el locale por defecto de Chromium → instalador más liviano.
+electronLanguages:
+  - es
+  - en-US
+
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  artifactName: FinancialManager-${version}-win-${arch}-setup.${ext}
+  # Sin firma de código en v1 (Windows SmartScreen puede avisar).
+  # Mantiene icono/metadatos; solo omite el firmado.
+  signExecutable: false
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: FinancialManager
+  uninstallDisplayName: FinancialManager
+  runAfterFinish: true
+  # Conservar userData (y la SQLite) al desinstalar.
+  deleteAppDataOnUninstall: false
+  artifactName: FinancialManager-${version}-win-${arch}-setup.${ext}
